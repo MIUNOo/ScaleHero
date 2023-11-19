@@ -11,9 +11,12 @@ public class PlayerBasic : MonoBehaviour
 
     public float spawnRange = 10f;
     public float bulletSpeed = 10f;
+    public float minShootInterval = 0.2f;
 
     private Rigidbody2D rb2D;
     private Vector3 movement;
+
+    private float lastShootTime;
 
     void Start()
     {
@@ -44,28 +47,21 @@ public class PlayerBasic : MonoBehaviour
         RotateTowardsMouse();
 
 
-        if (Input.GetMouseButton(0))
+
+        if (Input.GetMouseButton(0)&&Time.time - lastShootTime >= minShootInterval)
         {
-
-            //// 水平方向随机生成子弹
-            //Vector3 spawnPos = transform.position + new Vector3(Random.Range(-spawnRange, spawnRange), 0);
-
-            //// 设置子弹刚体速度为面向方向
-            //GameObject bullet = Instantiate(bulletPrefab, spawnPos, transform.rotation);
-            //Rigidbody2D rb = bullet.GetComponent<Rigidbody2D>();
-            //rb.velocity = transform.up * speed;
-
             ShootBullet();
+            lastShootTime = Time.time;  // 更新上一次射击的时间
         }
 
 
 
-            //Debug.Log(movement.ToString());
+        //Debug.Log(movement.ToString());
 
-            //transform.position += movement * speed * Time.deltaTime;
-            // Move the player
-            // MovePlayer(movement);
-        }
+        //transform.position += movement * speed * Time.deltaTime;
+        // Move the player
+        // MovePlayer(movement);
+    }
 
         private void FixedUpdate()
     {
@@ -109,15 +105,17 @@ public class PlayerBasic : MonoBehaviour
         transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.AngleAxis(angle, Vector3.forward), 20*Time.deltaTime);
     }
 
-    void ShootBullet() // FIX: HORIZON SHOOTING
+    void ShootBullet() 
     {
         // 生成子弹的随机方向
-        float randomAngle = Random.Range(-Mathf.PI / 4f, Mathf.PI / 4f); // 在-45度到45度之间随机选择一个角度
-        Vector2 bulletDirection = new Vector2(Mathf.Cos(randomAngle), Mathf.Sin(randomAngle));
+        //float randomAngle = Random.Range(-Mathf.PI / 4f, Mathf.PI / 4f); // 在-45度到45度之间随机选择一个角度
+        //Vector2 bulletDirection = new Vector2(Mathf.Cos(randomAngle), Mathf.Sin(randomAngle));
+        Vector3 randomPos = transform.up * Random.Range(-spawnRange, spawnRange);
+
 
         // 实例化子弹并设置位置和方向
-        GameObject bullet = Instantiate(bulletPrefab, transform.position, Quaternion.identity);
-        bullet.GetComponent<Rigidbody2D>().velocity = bulletDirection * bulletSpeed;
+        GameObject bullet = Instantiate(bulletPrefab, transform.position+randomPos, Quaternion.identity);
+        bullet.GetComponent<Rigidbody2D>().velocity = transform.right * bulletSpeed;
 
         // 注意：这里假设子弹有 Rigidbody2D 组件，确保子弹预制体中包含 Rigidbody2D 组件
     }
