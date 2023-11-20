@@ -36,6 +36,17 @@ public class PlayerBasic : MonoBehaviour
         // Normalize to prevent faster movement diagonally
         movement.Normalize();
 
+        #region Slow Mo
+        //if (Input.GetKeyDown(KeyCode.Space))
+        //{
+        //    Time.timeScale = 0.5f;
+        //}
+
+        //if (Input.GetKeyUp(KeyCode.Space))
+        //{
+        //    Time.timeScale = 1f;
+        //}
+        #endregion
 
         //// 获取鼠标位置
         //Vector3 mousePos = Input.mousePosition;
@@ -102,7 +113,7 @@ public class PlayerBasic : MonoBehaviour
         float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
 
         // 通过插值旋转物体
-        transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.AngleAxis(angle, Vector3.forward), 20*Time.deltaTime);
+        transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.AngleAxis(angle, Vector3.forward), 10*Time.deltaTime);
     }
 
     void ShootBullet() 
