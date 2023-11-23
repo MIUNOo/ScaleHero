@@ -650,5 +650,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   scaleSpeed: 0.5
-  minScale: 0.5
-  maxScale: 10
+  minScale: 2
+  maxScale: 12
+  lerpThreshold: 2
