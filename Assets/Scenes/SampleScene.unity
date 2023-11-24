@@ -222,6 +222,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   target: {fileID: 1966844450}
   smoothSpeed: 2.14
+  minSize: 0.35
+  maxSize: 20
 --- !u!1 &645628413
 GameObject:
   m_ObjectHideFlags: 0

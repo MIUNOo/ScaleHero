@@ -81,7 +81,7 @@ public class ScrollZoom : MonoBehaviour
             StopAllCoroutines();
             
             AdjustZoom(1, ref zoomInCount, zoomOutCount, LerpToMaxScale);
-            LOG("ZoomInCount: " + zoomInCount);
+            //LOG("ZoomInCount: " + zoomInCount);
         }
         else if (scrollDelta < 0)
         {
@@ -93,7 +93,7 @@ public class ScrollZoom : MonoBehaviour
             StopAllCoroutines();
             
             AdjustZoom(-1, ref zoomOutCount, zoomInCount, LerpToMinScale);
-            LOG("ZoomOutCount: " + zoomOutCount);
+            //LOG("ZoomOutCount: " + zoomOutCount);
         }
         //else
         //{
@@ -155,7 +155,7 @@ public class ScrollZoom : MonoBehaviour
         while (elapsedTime < lerpDuration)
         {
             transform.localScale = Vector3.Lerp(startScale, targetScale, elapsedTime / lerpDuration);
-            LOG(transform.localScale);
+            //LOG(transform.localScale);
             elapsedTime += Time.deltaTime;
             yield return null;
         }
