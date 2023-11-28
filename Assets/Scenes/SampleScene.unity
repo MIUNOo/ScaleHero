@@ -236,6 +236,7 @@ GameObject:
   - component: {fileID: 645628414}
   - component: {fileID: 645628416}
   - component: {fileID: 645628417}
+  - component: {fileID: 645628418}
   m_Layer: 0
   m_Name: Circle
   m_TagString: Untagged
@@ -303,7 +304,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 645628413}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -5.27, y: 1.09, z: 0}
+  m_LocalPosition: {x: -6.41, y: 0.42, z: 0}
   m_LocalScale: {x: 0.53154, y: 0.53154, z: 0.53154}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -382,7 +383,7 @@ TrailRenderer:
       m_Curve:
       - serializedVersion: 3
         time: 0
-        value: 0.4961751
+        value: 0.545454
         inSlope: 0
         outSlope: 0
         tangentMode: 0
@@ -433,12 +434,28 @@ TrailRenderer:
     numCornerVertices: 35
     numCapVertices: 26
     alignment: 0
-    textureMode: 1
+    textureMode: 0
     shadowBias: 1.06
     generateLightingData: 0
   m_MinVertexDistance: 1.14
   m_Autodestruct: 1
   m_Emitting: 1
+--- !u!114 &645628418
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 645628413}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 540f48b34d35a3746aff01ce30a91096, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  scaleSpeed: 2.86
+  minScale: 0.5
+  maxScale: 5
+  lerpThreshold: 13
 --- !u!1 &1913830340
 GameObject:
   m_ObjectHideFlags: 0
@@ -646,7 +663,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1966844448}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 540f48b34d35a3746aff01ce30a91096, type: 3}
   m_Name: 
