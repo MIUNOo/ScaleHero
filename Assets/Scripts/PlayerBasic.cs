@@ -13,6 +13,9 @@ public class PlayerBasic : MonoBehaviour
     public float bulletSpeed = 10f;
     public float minShootInterval = 0.2f;
 
+    public float squeezingSpeed = 1f;
+    public float minScale = 1f;
+
     private Rigidbody2D rb2D;
     private Vector3 movement;
 
@@ -22,6 +25,8 @@ public class PlayerBasic : MonoBehaviour
     {
         rb2D = GetComponent<Rigidbody2D>();
         Time.fixedDeltaTime = 0.02f;
+        // NEED CHANGE
+        minScale = transform.localScale.x;
     }
 
     void Update()
@@ -59,10 +64,11 @@ public class PlayerBasic : MonoBehaviour
 
 
 
-        if (Input.GetMouseButton(0)&&Time.time - lastShootTime >= minShootInterval)
+        if (Input.GetMouseButton(0)&&Time.time - lastShootTime >= minShootInterval&&transform.localScale.x!=minScale)   // 按下左键，若仍有射击时间且有子弹
         {
             ShootBullet();
             lastShootTime = Time.time;  // 更新上一次射击的时间
+            StartCoroutine(SqueezePlayer(bulletPrefab.transform.localScale.x));
         }
 
 
@@ -92,6 +98,20 @@ public class PlayerBasic : MonoBehaviour
 
     }
 
+
+    IEnumerator SqueezePlayer(float bulletSize)
+    {
+
+        var squeezeQt = transform.localScale.x - minScale;
+        var targetScale = transform.localScale.x - bulletSize * squeezingSpeed;
+        while (transform.localScale.x > Mathf.Clamp(targetScale,minScale,transform.localScale.x))
+        {
+            transform.localScale -= Vector3.one * squeezingSpeed * Time.deltaTime * bulletSize;
+            yield return null;
+        }
+
+        transform.localScale = Vector3.one * Mathf.Clamp(targetScale, minScale, transform.localScale.x); // 确保最终大小不小于 minScale
+    }
 
     void MovePlayer(Vector2 direction)
     {
@@ -127,6 +147,9 @@ public class PlayerBasic : MonoBehaviour
         // 实例化子弹并设置位置和方向
         GameObject bullet = Instantiate(bulletPrefab, transform.position+randomPos, Quaternion.identity);
         bullet.GetComponent<Rigidbody2D>().velocity = transform.right * bulletSpeed;
+        GetComponent<ScrollZoom>().StopAllCoroutines();
+        //StopAllCoroutines();
+        StartCoroutine(SqueezePlayer(bullet.transform.localScale.x));
 
         // 注意：这里假设子弹有 Rigidbody2D 组件，确保子弹预制体中包含 Rigidbody2D 组件
     }

@@ -71,10 +71,10 @@ public class ScrollZoom : MonoBehaviour
 
 
 
-        if (scrollDelta > 0)
+        if (scrollDelta < 0 && transform.localScale.y!=maxScale )
         {
             previousScroll = scrollDelta;
-            elapsedTime = 0;
+            elapsedTime = Time.deltaTime;
             //StopAllCoroutines();
 
             zoomOutCount = 0;
@@ -83,10 +83,10 @@ public class ScrollZoom : MonoBehaviour
             AdjustZoom(1, ref zoomInCount, zoomOutCount, LerpToMaxScale);
             //LOG("ZoomInCount: " + zoomInCount);
         }
-        else if (scrollDelta < 0)
+        else if (scrollDelta > 0 && transform.localScale.y != minScale)
         {
             previousScroll = scrollDelta;
-            elapsedTime = 0;
+            elapsedTime = Time.deltaTime;
             //StopAllCoroutines();
 
             zoomInCount = 0;
@@ -147,9 +147,10 @@ public class ScrollZoom : MonoBehaviour
 
     IEnumerator LerpScale(Vector3 targetScale)
     {
-        float elapsedTime = 0f;
+        elapsedTime = 0f;
         Vector3 startScale = transform.localScale;
         float targetDistance = Mathf.Abs(transform.localScale.x - targetScale.x);
+        // calculate the targetDistance 使得越靠近极值越快
         float lerpDuration = targetDistance * scaleSpeed;
 
         while (elapsedTime < lerpDuration)
