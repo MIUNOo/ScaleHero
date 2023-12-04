@@ -16,6 +16,8 @@ public class PlayerBasic : MonoBehaviour
     public float squeezingSpeed = 1f;
     public float minScale = 1f;
 
+    public float recoilForce = 1f;
+
     private Rigidbody2D rb2D;
     private Vector3 movement;
 
@@ -69,6 +71,7 @@ public class PlayerBasic : MonoBehaviour
             ShootBullet();
             lastShootTime = Time.time;  // 更新上一次射击的时间
             StartCoroutine(SqueezePlayer(bulletPrefab.transform.localScale.x));
+            ApplyRecoil();  // 后座力
         }
 
 
@@ -97,7 +100,15 @@ public class PlayerBasic : MonoBehaviour
         //}
 
     }
+    void MovePlayer(Vector2 direction)
+    {
+        // Change Speed accroding to scale
+        float speedWithScale = speed/transform.localScale.x;
+        // NEEDFIX: VELOCITY ACCUMULATE DURING SLOW MOTION
 
+
+        rb2D.velocity += new Vector2(direction.x * speedWithScale, direction.y * speedWithScale);
+    }
 
     IEnumerator SqueezePlayer(float bulletSize)
     {
@@ -113,11 +124,6 @@ public class PlayerBasic : MonoBehaviour
         transform.localScale = Vector3.one * Mathf.Clamp(targetScale, minScale, transform.localScale.x); // 确保最终大小不小于 minScale
     }
 
-    void MovePlayer(Vector2 direction)
-    {
-        // Apply movement to the rigidbody
-        rb2D.velocity = new Vector2(direction.x * speed, direction.y * speed);
-    }
 
 
     void RotateTowardsMouse()
@@ -152,5 +158,18 @@ public class PlayerBasic : MonoBehaviour
         StartCoroutine(SqueezePlayer(bullet.transform.localScale.x));
 
         // 注意：这里假设子弹有 Rigidbody2D 组件，确保子弹预制体中包含 Rigidbody2D 组件
+    }
+
+    void ApplyRecoil()
+    {
+        // 获取子弹的发射方向
+        Vector2 bulletDirection = transform.right;
+
+        // 将后座力方向设置为与子弹发射方向相反
+        Vector2 recoilDirection = -bulletDirection;
+
+        // 将后座力应用到玩家的速度上
+        rb2D.velocity += recoilDirection * recoilForce;
+        //rb2D.AddForce(recoilDirection * recoilForce);
     }
 }

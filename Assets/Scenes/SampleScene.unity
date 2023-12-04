@@ -5500,7 +5500,7 @@ Rigidbody2D:
   m_UseFullKinematicContacts: 0
   m_UseAutoMass: 1
   m_Mass: 28.874817
-  m_LinearDrag: 100
+  m_LinearDrag: 50
   m_AngularDrag: 0.05
   m_GravityScale: 0
   m_Material: {fileID: 0}
@@ -5536,13 +5536,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9bce08f3af39da5418a185a117b847ef, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  speed: 8
+  speed: 15
   bulletPrefab: {fileID: 645628413}
   spawnRange: 0.6
   bulletSpeed: 60.01
   minShootInterval: 0.05
   squeezingSpeed: 0.28
   minScale: 6
+  recoilForce: 50
 --- !u!114 &1966844454
 MonoBehaviour:
   m_ObjectHideFlags: 0
