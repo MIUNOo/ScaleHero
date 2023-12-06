@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEditor.U2D;
 using UnityEngine;
+using static Logger;
 
 public class PlayerBasic : MonoBehaviour
 {
@@ -103,11 +104,18 @@ public class PlayerBasic : MonoBehaviour
     void MovePlayer(Vector2 direction)
     {
         // Change Speed accroding to scale
-        float speedWithScale = speed/transform.localScale.x;
-        // NEEDFIX: VELOCITY ACCUMULATE DURING SLOW MOTION
+        float speedWithScale = speed / transform.localScale.x;
+        // FIXED: VELOCITY ACCUMULATE DURING SLOW MOTION
+
+        // LOG(direction.ToString());
+
+        float adjustedSpeed = speedWithScale * (Time.fixedDeltaTime / 0.02f);
+
+        rb2D.velocity += new Vector2(direction.x * adjustedSpeed, direction.y * adjustedSpeed);
 
 
-        rb2D.velocity += new Vector2(direction.x * speedWithScale, direction.y * speedWithScale);
+        // rb2D.AddForce(new Vector2(direction.x * speedWithScale, direction.y * speedWithScale), ForceMode2D.Force);
+
     }
 
     IEnumerator SqueezePlayer(float bulletSize)
@@ -169,7 +177,7 @@ public class PlayerBasic : MonoBehaviour
         Vector2 recoilDirection = -bulletDirection;
 
         // 将后座力应用到玩家的速度上
-        rb2D.velocity += recoilDirection * recoilForce;
+        rb2D.velocity += recoilDirection * recoilForce * Time.timeScale;
         //rb2D.AddForce(recoilDirection * recoilForce);
     }
 }

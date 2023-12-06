@@ -74,7 +74,7 @@ public class CameraFollow : MonoBehaviour
             
             //float newSize = Mathf.Lerp(maxSize, minSize, targetScale*smoothSpeed);
             //LOG("NEWSIZE: "+newSize);
-            LOG(targetScale);
+            //LOG(targetScale);
 
             // 使用 Lerp 平滑调整摄像机的size
             // mainCamera.orthographicSize = Mathf.Lerp(mainCamera.orthographicSize, newSize, smoothSpeed * Time.deltaTime);
@@ -82,8 +82,8 @@ public class CameraFollow : MonoBehaviour
 
             // 将相机size调整到物体scale的两倍，以其smoothSpeed * Time.deltaTime*0.3f*Mathf.Abs(mainCamera.orthographicSize-2*targetScale) 的步数
             mainCamera.orthographicSize = Mathf.Lerp(mainCamera.orthographicSize, targetScale*2, smoothSpeed * Time.deltaTime*0.3f*Mathf.Abs(mainCamera.orthographicSize-2*targetScale));
-            LOG("SIZE: "+mainCamera.orthographicSize);
-            LOG("THEREOTICAL: "+ Mathf.Lerp(mainCamera.orthographicSize, targetScale * 2, smoothSpeed * Time.deltaTime * 0.3f * Mathf.Abs(mainCamera.orthographicSize - targetScale)));
+            //LOG("SIZE: "+mainCamera.orthographicSize);
+            //LOG("THEREOTICAL: "+ Mathf.Lerp(mainCamera.orthographicSize, targetScale * 2, smoothSpeed * Time.deltaTime * 0.3f * Mathf.Abs(mainCamera.orthographicSize - targetScale)));
         }
     }
 

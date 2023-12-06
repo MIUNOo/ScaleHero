@@ -6,9 +6,12 @@ public class SlowTime : MonoBehaviour
 {
     float playerSpeed = 0;
     bool startSlowMo = false;
+    float originTimeScale = 0;
     private void Start()
     {
         playerSpeed = GetComponent<PlayerBasic>().speed;
+        originTimeScale = Time.fixedDeltaTime;
+
     }
 
     // Update is called once per frame
@@ -19,19 +22,20 @@ public class SlowTime : MonoBehaviour
             
             Time.timeScale = 0.3f;
             Time.fixedDeltaTime = Time.timeScale*0.01f;
-            if (!startSlowMo )
-            {
-                GetComponent<PlayerBasic>().speed *= 0.01f;
-                startSlowMo = true;
-            }
+            //if (!startSlowMo )
+            //{
+            //    GetComponent<PlayerBasic>().speed *= 0.01f;
+            //    startSlowMo = true;
+            //}
 
         }
 
         if (Input.GetMouseButtonUp(1))
         {
             Time.timeScale = 1f;
-            GetComponent<PlayerBasic>().speed = playerSpeed;
-            startSlowMo= false;
+            // Time.fixedDeltaTime = originTimeScale;
+            //GetComponent<PlayerBasic>().speed = playerSpeed;
+            startSlowMo = false;
         }
     }
 }
