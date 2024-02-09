@@ -24,9 +24,14 @@ public class PlayerBasic : MonoBehaviour
 
     private float lastShootTime;
 
+    private ScrollZoom scrollZoom;
+    private float accumulatedScrollDelta = 0;
+    private float scaleSpeed = 1;
+
     void Start()
     {
         rb2D = GetComponent<Rigidbody2D>();
+        scrollZoom = GetComponent<ScrollZoom>();
         Time.fixedDeltaTime = 0.02f;
         // NEED CHANGE
         minScale = transform.localScale.x;
@@ -75,7 +80,23 @@ public class PlayerBasic : MonoBehaviour
             ApplyRecoil();  // 后座力
         }
 
+        ////    在此处判断是否是时缓，如果是则检测滚轮滚动量 accumulatedScrollDelta += Input.mouseScrollDelta.y;
+        ////    同时判断是否松开，松开则调用Explode()
+        
+        if (Input.GetMouseButton(1))
+        {
+            scaleSpeed = -scrollZoom.scaleSpeed;    // 逆向缩放
+            scrollZoom.enabled = false;
+            accumulatedScrollDelta+=Input.mouseScrollDelta.y;
+            //需要animation，颤动
+        }
 
+        if(Input.GetMouseButtonUp(1))
+        {
+            Explode();
+            accumulatedScrollDelta = 0;
+            scrollZoom.enabled = true;
+        }
 
         //Debug.Log(movement.ToString());
 
@@ -84,7 +105,7 @@ public class PlayerBasic : MonoBehaviour
         // MovePlayer(movement);
     }
 
-        private void FixedUpdate()
+    private void FixedUpdate()
     {
         //rb2D.MovePosition(transform.position + movement * speed * Time.fixedDeltaTime);
 
@@ -116,7 +137,7 @@ public class PlayerBasic : MonoBehaviour
 
         // rb2D.AddForce(new Vector2(direction.x * speedWithScale, direction.y * speedWithScale), ForceMode2D.Force);
 
-    }
+    }   // 移动玩家
 
     IEnumerator SqueezePlayer(float bulletSize)
     {
@@ -130,7 +151,7 @@ public class PlayerBasic : MonoBehaviour
         }
 
         transform.localScale = Vector3.one * Mathf.Clamp(targetScale, minScale, transform.localScale.x); // 确保最终大小不小于 minScale
-    }
+    }   // 射子弹收缩玩家
 
 
 
@@ -148,7 +169,7 @@ public class PlayerBasic : MonoBehaviour
 
         // 通过插值旋转物体
         transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.AngleAxis(angle, Vector3.forward), 10*Time.deltaTime);
-    }
+    }   // 面向鼠标旋转
 
     void ShootBullet() 
     {
@@ -166,7 +187,7 @@ public class PlayerBasic : MonoBehaviour
         StartCoroutine(SqueezePlayer(bullet.transform.localScale.x));
 
         // 注意：这里假设子弹有 Rigidbody2D 组件，确保子弹预制体中包含 Rigidbody2D 组件
-    }
+    }   // 射击
 
     void ApplyRecoil()
     {
@@ -179,5 +200,22 @@ public class PlayerBasic : MonoBehaviour
         // 将后座力应用到玩家的速度上
         rb2D.velocity += recoilDirection * recoilForce * Time.timeScale;
         //rb2D.AddForce(recoilDirection * recoilForce);
+    }   // 后座力
+
+    /// <summary>
+    /// TODO: 考虑增加一个判定，如果缩放大于maxScale，会缓慢缩小到maxScale
+    /// 问题是在哪里进行判定和如何缩放， 目前的思路是协程，或者在Update中判断
+    /// </summary>
+
+    void Explode()  // 爆炸效果
+    {
+        Vector3 currentScale = transform.localScale;
+        // var scaleSpeed = scrollZoom.scaleSpeed;
+        float newScaleX = Mathf.Clamp(currentScale.x + accumulatedScrollDelta * scaleSpeed,minScale,float.MaxValue);
+        float newScaleY = Mathf.Clamp(currentScale.y + accumulatedScrollDelta * scaleSpeed,minScale,float.MaxValue);
+        Vector3 newScale = new Vector3(newScaleX, newScaleY, currentScale.z);
+        transform.localScale = newScale;
+        // 需要协程来逐步缩放，或者考虑用曲线，不，是必须用贝塞尔曲线
+        // 爆炸效果,根据缩放方向决定光环收缩扩张
     }
 }

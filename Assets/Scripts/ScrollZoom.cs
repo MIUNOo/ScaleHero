@@ -20,6 +20,8 @@ public class ScrollZoom : MonoBehaviour
     public float scaleSpeed = 1f;
     public float minScale = 0.1f;
     public float maxScale = 10f;
+
+    public float restorationTime = 1f;
     private float previousScroll;
 
     public int lerpThreshold = 2;
@@ -34,6 +36,7 @@ public class ScrollZoom : MonoBehaviour
     {
         
     }
+
 
     // Update is called once per frame
     void Update()   //////////// TODO: Zoom In out Burst in Slow mo
@@ -71,7 +74,7 @@ public class ScrollZoom : MonoBehaviour
 
 
 
-        if (scrollDelta < 0 && transform.localScale.y!=maxScale )
+        if (scrollDelta < 0 && transform.localScale.y < maxScale )
         {
             previousScroll = scrollDelta;
             elapsedTime = Time.deltaTime;
@@ -79,11 +82,13 @@ public class ScrollZoom : MonoBehaviour
 
             zoomOutCount = 0;
             StopAllCoroutines();
+            //StopCoroutine(LerpScale(Vector3.one * maxScale));
+            //StopCoroutine(LerpScale(Vector3.one * minScale));
             
             AdjustZoom(1, ref zoomInCount, zoomOutCount, LerpToMaxScale);
             //LOG("ZoomInCount: " + zoomInCount);
         }
-        else if (scrollDelta > 0 && transform.localScale.y != minScale)
+        else if (scrollDelta > 0 && transform.localScale.y > minScale && transform.localScale.y <= maxScale)
         {
             previousScroll = scrollDelta;
             elapsedTime = Time.deltaTime;
@@ -91,7 +96,10 @@ public class ScrollZoom : MonoBehaviour
 
             zoomInCount = 0;
             StopAllCoroutines();
-            
+
+            //StopCoroutine(LerpScale(Vector3.one * maxScale));
+            //StopCoroutine(LerpScale(Vector3.one * minScale));
+
             AdjustZoom(-1, ref zoomOutCount, zoomInCount, LerpToMinScale);
             //LOG("ZoomOutCount: " + zoomOutCount);
         }
@@ -107,7 +115,14 @@ public class ScrollZoom : MonoBehaviour
 
     }
 
-
+    private void OnEnable()
+    {
+        if (transform.localScale.x>maxScale)
+        {
+            StopCoroutine(FastLerpScale(Vector3.one * maxScale));
+            StartCoroutine(FastLerpScale(Vector3.one * maxScale));
+        }
+    }
 
     void AdjustZoom(int direction, ref int currentCount, int otherCount, System.Action lerpAction)
     {
@@ -164,6 +179,39 @@ public class ScrollZoom : MonoBehaviour
         // 缩放完成后调整为最接近的偶数
         transform.localScale = new Vector3(RoundToNearestEven(targetScale.x), RoundToNearestEven(targetScale.y), targetScale.z);
     }
+
+    IEnumerator FastLerpScale(Vector3 targetScale)
+    {   
+
+        yield return new WaitForSecondsRealtime(restorationTime);
+        elapsedTime = 0f;
+        Vector3 startScale = transform.localScale;
+        //float targetDistance = Mathf.Abs(transform.localScale.x - targetScale.x);
+        //// calculate the targetDistance 使得越靠近极值越快
+        //float lerpDuration = targetDistance * scaleSpeed;
+
+        // 控制 lerpDuration 在 0.1 到 0.2 之间
+        float minDuration = 0.1f;
+        float maxDuration = 0.2f;
+
+        // 计算当前比例和最大比例的比值
+        float ratio = Mathf.Clamp(transform.localScale.x / maxScale, 0f, 1f);
+
+        // 映射比值到 0.1 到 0.2 之间
+        float lerpDuration = Mathf.Lerp(minDuration, maxDuration, ratio);
+
+        while (elapsedTime < lerpDuration)
+        {
+            transform.localScale = Vector3.Lerp(startScale, targetScale, elapsedTime / lerpDuration);
+            //LOG(transform.localScale);
+            elapsedTime += Time.deltaTime;
+            yield return null;
+        }
+
+        // 缩放完成后调整为最接近的偶数
+        transform.localScale = new Vector3(RoundToNearestEven(targetScale.x), RoundToNearestEven(targetScale.y), targetScale.z);
+    }
+
 
     float RoundToNearestEven(float value)
     {

@@ -5268,6 +5268,7 @@ MonoBehaviour:
   scaleSpeed: 0.53
   minScale: 2
   maxScale: 8
+  restorationTime: 2
   lerpThreshold: 2
 --- !u!1 &1878342008
 GameObject:
@@ -5571,4 +5572,5 @@ MonoBehaviour:
   scaleSpeed: 0.5
   minScale: 6
   maxScale: 20
+  restorationTime: 1.01
   lerpThreshold: 2
