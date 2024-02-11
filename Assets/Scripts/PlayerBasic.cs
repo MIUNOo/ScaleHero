@@ -1,3 +1,4 @@
+using Cysharp.Threading.Tasks;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEditor.U2D;
@@ -76,7 +77,7 @@ public class PlayerBasic : MonoBehaviour
         {
             ShootBullet();
             lastShootTime = Time.time;  // 更新上一次射击的时间
-            StartCoroutine(SqueezePlayer(bulletPrefab.transform.localScale.x));
+            _ = SqueezePlayer(bulletPrefab.transform.localScale.x);
             ApplyRecoil();  // 后座力
         }
 
@@ -139,19 +140,19 @@ public class PlayerBasic : MonoBehaviour
 
     }   // 移动玩家
 
-    IEnumerator SqueezePlayer(float bulletSize)
+    async UniTask SqueezePlayer(float bulletSize)
     {
+        float squeezeQt = transform.localScale.x - minScale;
+        float targetScale = transform.localScale.x - bulletSize * squeezingSpeed;
 
-        var squeezeQt = transform.localScale.x - minScale;
-        var targetScale = transform.localScale.x - bulletSize * squeezingSpeed;
-        while (transform.localScale.x > Mathf.Clamp(targetScale,minScale,transform.localScale.x))
+        while (transform.localScale.x > Mathf.Clamp(targetScale, minScale, transform.localScale.x))
         {
             transform.localScale -= Vector3.one * squeezingSpeed * Time.deltaTime * bulletSize;
-            yield return null;
+            await UniTask.Yield(); // 等待一帧
         }
 
-        transform.localScale = Vector3.one * Mathf.Clamp(targetScale, minScale, transform.localScale.x); // 确保最终大小不小于 minScale
-    }   // 射子弹收缩玩家
+        transform.localScale = Vector3.one * Mathf.Clamp(targetScale, minScale, transform.localScale.x);
+    }  // 射子弹收缩玩家
 
 
 
@@ -182,9 +183,12 @@ public class PlayerBasic : MonoBehaviour
         // 实例化子弹并设置位置和方向
         GameObject bullet = Instantiate(bulletPrefab, transform.position+randomPos, Quaternion.identity);
         bullet.GetComponent<Rigidbody2D>().velocity = transform.right * bulletSpeed;
-        GetComponent<ScrollZoom>().StopAllCoroutines();
+        if (transform.localScale.x <= scrollZoom.maxScale)
+        {
+            scrollZoom.StopAllCoroutines();
+        }
         //StopAllCoroutines();
-        StartCoroutine(SqueezePlayer(bullet.transform.localScale.x));
+        _ = SqueezePlayer(bullet.transform.localScale.x);
 
         // 注意：这里假设子弹有 Rigidbody2D 组件，确保子弹预制体中包含 Rigidbody2D 组件
     }   // 射击
