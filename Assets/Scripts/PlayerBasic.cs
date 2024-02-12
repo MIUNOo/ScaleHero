@@ -1,6 +1,7 @@
 using Cysharp.Threading.Tasks;
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading;
 using UnityEditor.U2D;
 using UnityEngine;
 using static Logger;
@@ -17,6 +18,7 @@ public class PlayerBasic : MonoBehaviour
 
     public float squeezingSpeed = 1f;
     public float minScale = 1f;
+    private float maxScale;
 
     public float recoilForce = 1f;
 
@@ -29,10 +31,16 @@ public class PlayerBasic : MonoBehaviour
     private float accumulatedScrollDelta = 0;
     private float scaleSpeed = 1;
 
+    private CancellationTokenSource rotateCencelToken;
+    private CancellationTokenSource squeezeCencelToken;
+
     void Start()
     {
         rb2D = GetComponent<Rigidbody2D>();
         scrollZoom = GetComponent<ScrollZoom>();
+        rotateCencelToken = new CancellationTokenSource();
+        squeezeCencelToken = new CancellationTokenSource();
+        maxScale = scrollZoom.maxScale;
         Time.fixedDeltaTime = 0.02f;
         // NEED CHANGE
         minScale = transform.localScale.x;
@@ -40,6 +48,9 @@ public class PlayerBasic : MonoBehaviour
 
     void Update()
     {
+        if (!gameObject)
+            return;
+
         // Input
         float horizontalInput = Input.GetAxisRaw("Horizontal");
         float verticalInput = Input.GetAxisRaw("Vertical");
@@ -69,7 +80,9 @@ public class PlayerBasic : MonoBehaviour
         //float angle = Mathf.Atan2(mousePos.y - transform.position.y, mousePos.x - transform.position.x);
         //transform.rotation = Quaternion.Euler(0, 0, angle);
 
-        RotateTowardsMouse();
+        //RotateTowardsMouse();
+
+        _ = RotateTowardsMouseAsync(rotateCencelToken.Token).SuppressCancellationThrow();
 
 
 
@@ -77,7 +90,7 @@ public class PlayerBasic : MonoBehaviour
         {
             ShootBullet();
             lastShootTime = Time.time;  // 更新上一次射击的时间
-            _ = SqueezePlayer(bulletPrefab.transform.localScale.x);
+            _ = SqueezePlayer(bulletPrefab.transform.localScale.x, squeezeCencelToken.Token);
             ApplyRecoil();  // 后座力
         }
 
@@ -123,6 +136,20 @@ public class PlayerBasic : MonoBehaviour
         //}
 
     }
+
+    private void OnDestroy()
+    {
+        rotateCencelToken.Dispose();
+        squeezeCencelToken.Dispose();
+    }
+
+    private void OnDisable()
+    {
+        squeezeCencelToken.Cancel();
+        rotateCencelToken.Cancel();        
+        // LOG("PlayerBasic OnDisable");
+    }
+
     void MovePlayer(Vector2 direction)
     {
         // Change Speed accroding to scale
@@ -140,10 +167,15 @@ public class PlayerBasic : MonoBehaviour
 
     }   // 移动玩家
 
-    async UniTask SqueezePlayer(float bulletSize)
+    async UniTask SqueezePlayer(float bulletSize, CancellationToken cancellationToken)
     {
         float squeezeQt = transform.localScale.x - minScale;
         float targetScale = transform.localScale.x - bulletSize * squeezingSpeed;
+
+        if (cancellationToken.IsCancellationRequested)
+        {
+            return;
+        }
 
         while (transform.localScale.x > Mathf.Clamp(targetScale, minScale, transform.localScale.x))
         {
@@ -156,7 +188,23 @@ public class PlayerBasic : MonoBehaviour
 
 
 
-    void RotateTowardsMouse()
+    //void RotateTowardsMouse()
+    //{
+    //    // 获取鼠标位置
+    //    Vector3 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+    //    mousePos.z = 0f;
+
+    //    // 计算朝向鼠标的方向向量
+    //    Vector2 direction = (mousePos - transform.position).normalized;
+
+    //    // 计算旋转角度
+    //    float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
+
+    //    // 通过插值旋转物体
+    //    transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.AngleAxis(angle, Vector3.forward), Time.fixedDeltaTime);
+    //}   // 面向鼠标旋转
+
+    async UniTask RotateTowardsMouseAsync(CancellationToken cancellationToken)
     {
         // 获取鼠标位置
         Vector3 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
@@ -168,9 +216,19 @@ public class PlayerBasic : MonoBehaviour
         // 计算旋转角度
         float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
 
-        // 通过插值旋转物体
-        transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.AngleAxis(angle, Vector3.forward), 10*Time.deltaTime);
-    }   // 面向鼠标旋转
+
+
+        //if (!gameObject)
+        //{
+        //    return;
+        //}
+
+        // 通过插值旋转物体 fixedDeltaTime受Time.timeScale影响，deltatime不受
+        transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.AngleAxis(angle, Vector3.forward), 10 * Time.deltaTime);
+
+        // 等待一帧
+        await UniTask.Yield(PlayerLoopTiming.Update);
+    }
 
     void ShootBullet() 
     {
@@ -188,13 +246,15 @@ public class PlayerBasic : MonoBehaviour
             scrollZoom.StopAllCoroutines();
         }
         //StopAllCoroutines();
-        _ = SqueezePlayer(bullet.transform.localScale.x);
+        _ = SqueezePlayer(bullet.transform.localScale.x, squeezeCencelToken.Token);
 
         // 注意：这里假设子弹有 Rigidbody2D 组件，确保子弹预制体中包含 Rigidbody2D 组件
     }   // 射击
 
-    void ApplyRecoil()
+    async void ApplyRecoil()
     {
+        await UniTask.Delay(1);
+
         // 获取子弹的发射方向
         Vector2 bulletDirection = transform.right;
 
@@ -204,6 +264,8 @@ public class PlayerBasic : MonoBehaviour
         // 将后座力应用到玩家的速度上
         rb2D.velocity += recoilDirection * recoilForce * Time.timeScale;
         //rb2D.AddForce(recoilDirection * recoilForce);
+
+
     }   // 后座力
 
     /// <summary>
@@ -218,8 +280,44 @@ public class PlayerBasic : MonoBehaviour
         float newScaleX = Mathf.Clamp(currentScale.x + accumulatedScrollDelta * scaleSpeed,minScale,float.MaxValue);
         float newScaleY = Mathf.Clamp(currentScale.y + accumulatedScrollDelta * scaleSpeed,minScale,float.MaxValue);
         Vector3 newScale = new Vector3(newScaleX, newScaleY, currentScale.z);
-        transform.localScale = newScale;
+        StartCoroutine(FastLerpScale(newScale));
+        // transform.localScale = newScale;
         // 需要协程来逐步缩放，或者考虑用曲线，不，是必须用贝塞尔曲线
         // 爆炸效果,根据缩放方向决定光环收缩扩张
+    }
+
+
+    IEnumerator FastLerpScale(Vector3 targetScale)
+    {
+
+        float elapsedTime = 0f;
+        Vector3 startScale = transform.localScale;
+
+        // 控制 lerpDuration 在 0.1 到 0.2 之间
+        float minDuration = 0.5f;
+        float maxDuration = 0.1f;
+
+        // 计算当前比例和最大比例的比值
+        float ratio = Mathf.Clamp(transform.localScale.x / (2 * maxScale), 0f, 1f);
+
+        // 映射比值到 0.1 到 0.2 之间
+        float lerpDuration = Mathf.Lerp(minDuration, maxDuration, ratio);
+
+        while (elapsedTime < lerpDuration)
+        {
+            transform.localScale = Vector3.Lerp(startScale, targetScale, elapsedTime / lerpDuration);
+            //LOG(transform.localScale);
+            elapsedTime += Time.deltaTime;
+            yield return null;
+        }
+
+        // 缩放完成后调整为最接近的偶数
+        transform.localScale = new Vector3(RoundToNearestEven(targetScale.x), RoundToNearestEven(targetScale.y), targetScale.z);
+    }
+
+
+    float RoundToNearestEven(float value)
+    {
+        return Mathf.Round(value / 2f) * 2f;
     }
 }
