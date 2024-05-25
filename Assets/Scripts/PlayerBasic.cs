@@ -34,6 +34,9 @@ public class PlayerBasic : MonoBehaviour
     private CancellationTokenSource rotateCencelToken;
     private CancellationTokenSource squeezeCencelToken;
 
+    [SerializeField] ShockWaveManager shockWaveManager;
+
+
     void Start()
     {
         rb2D = GetComponent<Rigidbody2D>();
@@ -96,12 +99,22 @@ public class PlayerBasic : MonoBehaviour
 
         ////    在此处判断是否是时缓，如果是则检测滚轮滚动量 accumulatedScrollDelta += Input.mouseScrollDelta.y;
         ////    同时判断是否松开，松开则调用Explode()
-        
+
+
+        if (Input.GetMouseButtonDown(1))
+        {
+            _ = shockWaveManager.ShockWaveAction(-0.1f, 1f);
+        }
+
+
+
         if (Input.GetMouseButton(1))
         {
             scaleSpeed = -scrollZoom.scaleSpeed;    // 逆向缩放
             scrollZoom.enabled = false;
             accumulatedScrollDelta+=Input.mouseScrollDelta.y;
+            
+
             //需要animation，颤动
         }
 
@@ -281,6 +294,7 @@ public class PlayerBasic : MonoBehaviour
         float newScaleY = Mathf.Clamp(currentScale.y + accumulatedScrollDelta * scaleSpeed,minScale,float.MaxValue);
         Vector3 newScale = new Vector3(newScaleX, newScaleY, currentScale.z);
         StartCoroutine(FastLerpScale(newScale));
+
         // transform.localScale = newScale;
         // 需要协程来逐步缩放，或者考虑用曲线，不，是必须用贝塞尔曲线
         // 爆炸效果,根据缩放方向决定光环收缩扩张
