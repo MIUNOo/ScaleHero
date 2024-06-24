@@ -5703,10 +5703,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c1d60d01555acc74192cb5ee5958cabd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  health: 100
-  attackDamage: 20
-  movementSpeed: 5
-  player: {fileID: 1966844448}
+  enemy: {fileID: 11400000, guid: 51930895b7aad544489274ae46bcce4f, type: 2}
+  playerPosition: {fileID: 1966844450}
 --- !u!1 &1568390638
 GameObject:
   m_ObjectHideFlags: 0
